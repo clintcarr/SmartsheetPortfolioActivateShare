@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Workshops – Activate and Share</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <button id="btnSettings" class="ghost settings-btn" title="Edit config.json">&#9881; Settings</button>
+    <h1>AI Workshops</h1>
+    <p class="sub">Tick projects, then Activate and share: each is set to Active, and once its workspace is created it is shared with the email in the project name.</p>
+  </header>
+
+  <main>
+    <section class="filters">
+      <label>Date from <input type="date" id="fDateFrom"></label>
+      <label>Date to <input type="date" id="fDateTo"></label>
+      <label>Location <select id="fLocation"><option value="">All</option></select></label>
+      <label>Client (Type) <select id="fType"><option value="">All</option></select></label>
+      <label>Active <select id="fActive"><option value="">All</option><option value="yes">Active</option><option value="no">Not active</option></select></label>
+      <label>Shared <select id="fShared"><option value="">All</option><option value="no">Not shared</option><option value="yes">Shared</option></select></label>
+      <button id="btnClear" class="ghost">Clear filters</button>
+    </section>
+
+    <section class="bar">
+      <span id="count"></span>
+      <span class="spacer"></span>
+      <button id="btnShare" disabled>Activate and share</button>
+    </section>
+
+    <div id="msg" class="msg" hidden></div>
+
+    <table>
+      <thead>
+        <tr>
+          <th class="w-chk"><input type="checkbox" id="chkAll" title="Select all shown"></th>
+          <th class="w-name">Project (email)</th><th class="w-date">Date</th><th class="w-loc">Location</th><th class="w-client">Client</th><th class="c w-flag">Active</th><th class="c w-flag">Shared</th><th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="rows"><tr><td colspan="8" class="empty">Loading…</td></tr></tbody>
+    </table>
+  </main>
+
+  <dialog id="settingsDlg">
+    <form method="dialog" onsubmit="return false">
+      <div class="dlg-head"><h2>Settings</h2><span class="sub">Saved to config.json (a backup is kept as config.json.bak)</span></div>
+      <div id="settingsBody" class="dlg-body"></div>
+      <div id="settingsMsg" class="msg" hidden></div>
+      <div class="dlg-foot">
+        <button type="button" class="ghost" id="settingsCancel">Cancel</button>
+        <button type="button" id="settingsSave">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+  <script src="settings.js"></script>
+</body>
+</html>
