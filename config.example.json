@@ -1,0 +1,38 @@
+{
+  "smartsheet": {
+    "apiKey": "PASTE_YOUR_SMARTSHEET_API_TOKEN_HERE",
+    "baseUrl": "https://api.smartsheet.com/2.0"
+  },
+
+  "server": {
+    "port": 3000
+  },
+
+  "portfolios": [
+    {
+      "name": "AI Workshops",
+      "projectListSheetId": 0,
+
+      "workspaceAccess": "EDITOR",
+      "sendInviteEmail": true,
+
+      "trackerSheet": {
+        "name": "Community Project Tracker",
+        "access": "ADMIN"
+      },
+
+      "columns": {
+        "name": "Project Name",
+        "status": "Workspace Status",
+        "date": "Date",
+        "location": "Location",
+        "type": "Type",
+        "shared": "Shared"
+      },
+
+      "activeValue": "Active",
+      "pollSeconds": 5,
+      "provisionTimeoutSeconds": 300
+    }
+  ]
+}
