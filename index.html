@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <base target="_top">
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AI Workshops – Activate and Share</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -11,12 +10,22 @@
 </head>
 <body>
   <header>
-    <button id="btnSettings" class="ghost settings-btn" title="Edit config.json">&#9881; Settings</button>
+    <div class="hdr-actions">
+      <button id="btnFilters" class="ghost" title="Show or hide the filters">Hide filters</button>
+      <button id="btnProjects" class="ghost" title="Project list">Projects</button>
+      <button id="btnAnalytics" class="ghost" title="Tracker analytics">Analytics</button>
+      <button id="btnHelp" class="ghost" title="How to use this app">Help</button>
+      <button id="btnLog" class="ghost" title="Activity log">Log</button>
+      <button id="btnSettings" class="ghost" title="Edit settings">&#9881; Settings</button>
+    </div>
     <h1>AI Workshops</h1>
-    <p class="sub">Tick projects, then Activate and share: each is set to Active, and once its workspace is created it is shared with the email in the project name.</p>
+    <p class="sub" id="intro">Tick projects, then Activate and share: each is set to Active, and once its workspace is created it is shared with the email in the project name.</p>
+    <p class="sub" id="who" style="margin-top:6px;font-size:0.78rem;"></p>
   </header>
 
-  <main>
+  <div class="layout" id="layout">
+  <aside id="viewFilters" class="filterpane">
+    <div class="fp-head">Filters</div>
     <section class="filters">
       <label>Date from <input type="date" id="fDateFrom"></label>
       <label>Date to <input type="date" id="fDateTo"></label>
@@ -26,9 +35,15 @@
       <label>Shared <select id="fShared"><option value="">All</option><option value="no">Not shared</option><option value="yes">Shared</option></select></label>
       <button id="btnClear" class="ghost">Clear filters</button>
     </section>
+  </aside>
+  <div class="content">
+
+
+  <main id="viewProjects">
 
     <section class="bar">
       <span id="count"></span>
+      <button id="btnReload" class="ghost" style="margin-left:14px;padding:7px 16px;" title="Re-read the project list from Smartsheet">Reload</button>
       <span class="spacer"></span>
       <button id="btnShare" disabled>Activate and share</button>
     </section>
@@ -38,13 +53,71 @@
     <table>
       <thead>
         <tr>
-          <th class="w-chk"><input type="checkbox" id="chkAll" title="Select all shown"></th>
+          <th class="w-chk"><input type="checkbox" id="chkAll" title="Select all on this page"></th>
           <th class="w-name">Project (email)</th><th class="w-date">Date</th><th class="w-loc">Location</th><th class="w-client">Client</th><th class="c w-flag">Active</th><th class="c w-flag">Shared</th><th>Status</th>
         </tr>
       </thead>
       <tbody id="rows"><tr><td colspan="8" class="empty">Loading…</td></tr></tbody>
     </table>
+    <div class="pager" id="pager" hidden>
+      <span id="pgInfo" class="sub" style="font-size:0.8rem;"></span><span class="spacer"></span>
+      <button class="ghost" id="pgFirst" title="First page">&laquo;</button><button class="ghost" id="pgPrev">Previous</button>
+      <span id="pgNum" class="sub" style="font-size:0.8rem;min-width:90px;text-align:center;"></span>
+      <button class="ghost" id="pgNext">Next</button><button class="ghost" id="pgLast" title="Last page">&raquo;</button>
+    </div>
   </main>
+
+    <main id="viewAnalytics" hidden>
+    <h2 style="font-size:1.5rem;font-weight:800;margin:0 0 6px;">Tracker analytics</h2>
+    <p class="sub" style="margin-bottom:16px;">How many changes each participant has made in their tracker sheet. Only the participant's own edits count (the email in the project name); edits by you, automations or anyone else are ignored. Uses the filters above, and only projects whose workspace exists. A longer bar means more changes.</p>
+    <div class="logbar">
+      <label>Sort <select id="aSort"><option value="most">Most changes first</option><option value="fewest">Fewest changes first</option><option value="recent">Most recent first</option><option value="oldest">Oldest first</option><option value="name">Project name</option></select></label>
+      <button id="aScan" title="Scan the projects shown that have not been scanned yet">Scan new projects</button>
+      <button id="aRescan" class="ghost" disabled title="Checks 5 key cells first. If the participant edited none, it stops in seconds. Otherwise it continues to a full scan.">Quick re-scan selected</button>
+      <button id="aStop" class="ghost" hidden title="Stop the scan that is running now. Results found so far are kept.">Stop scan</button>
+      <button id="aFull" class="ghost" disabled title="Skips the quick check and reads every cell. Takes a few minutes per project and gives a complete count.">Full re-scan selected</button>
+      <label class="sub" style="font-size:0.8rem;display:flex;gap:6px;align-items:center;" title="Only show projects ticked in the Attended column of the project list. Untick to include everyone."><input type="checkbox" id="aAttended" checked> Attended only</label>
+      <label class="sub" style="font-size:0.8rem;display:flex;gap:6px;align-items:center;"><input type="checkbox" id="aAll"> Select all shown</label>
+      <span class="spacer"></span>
+      <span id="aCount" class="sub" style="font-size:0.8rem;"></span>
+    </div>
+    <div id="aMsg" class="msg" hidden></div>
+    <div class="achart" id="aChart"><div class="empty" style="text-align:center;color:var(--ink-dim);padding:30px;">Open this page to load the data.</div></div>
+    <div class="alegend"><span><i style="background:#3FA37A"></i>Latest change within 7 days</span><span><i style="background:#C99A3E"></i>8 to 30 days ago</span><span><i style="background:#C65D6B"></i>Over 30 days ago</span><span><i style="background:#5B8DEF"></i>Scanning</span><span><i style="background:rgba(255,255,255,0.3)"></i>No participant edits / not scanned</span></div>
+  </main>
+
+  <main id="viewLog" hidden>
+    <h2 style="font-size:1.5rem;font-weight:800;margin:0 0 6px;">Activity log</h2>
+    <p class="sub" style="margin-bottom:18px;">Everything this app has done for you: retrievals, reloads, settings changes and each activate-and-share step. Newest first. The last 1,000 entries are kept.</p>
+    <div class="logbar">
+      <label>Level <select id="lLevel"><option value="">All</option><option value="info">Info</option><option value="ok">Success</option><option value="error">Error</option></select></label>
+      <label>Search <input type="text" id="lSearch" placeholder="Filter text"></label>
+      <button id="lRefresh" class="ghost">Refresh</button>
+      <button id="lClear" class="ghost">Clear log</button>
+      <span class="spacer"></span>
+      <button id="lBack">Back to projects</button>
+    </div>
+    <div id="lMsg" class="msg" hidden></div>
+    <div id="lCount" class="bar" style="margin:0 4px 10px;"></div>
+    <table class="logtable">
+      <thead><tr><th class="w-ltime">Time</th><th class="w-llvl">Level</th><th class="w-lact">Action</th><th>Details</th></tr></thead>
+      <tbody id="lRows"><tr><td colspan="4" class="empty">Loading…</td></tr></tbody>
+    </table>
+  </main>
+
+  </div>
+  </div>
+
+  <dialog id="confirmDlg">
+    <form method="dialog" onsubmit="return false">
+      <div class="dlg-head"><h2>Confirm</h2></div>
+      <div id="confirmBody" class="dlg-body" style="white-space:pre-line;font-size:0.9rem;"></div>
+      <div class="dlg-foot">
+        <button type="button" class="ghost" id="confirmNo">Cancel</button>
+        <button type="button" id="confirmYes">Continue</button>
+      </div>
+    </form>
+  </dialog>
 
   <dialog id="settingsDlg">
     <form method="dialog" onsubmit="return false">
@@ -55,6 +128,96 @@
         <button type="button" class="ghost" id="settingsCancel">Cancel</button>
         <button type="button" id="settingsSave">Save</button>
       </div>
+    </form>
+  </dialog>
+
+  <dialog id="helpDlg">
+    <form method="dialog" onsubmit="return false">
+      <div class="dlg-head"><h2>Help</h2><span class="sub">How to use AI Workshops Share</span></div>
+      <div class="dlg-body help">
+        <h3>First time</h3>
+        <ol>
+          <li>Run <b>node server.js</b> and open the address it prints (http://localhost:3000 by default). Keep that window open while you work: scans and sharing run inside it.</li>
+          <li>Click <b>Settings</b>, fill in the fields below, and click <b>Save</b>. They are written to <b>config.json</b> in the app folder (a backup is kept as <b>config.json.bak</b>). You can also edit that file directly and restart.</li>
+          <li>The project list loads. Use <b>Reload</b> next to the project count to refresh it.</li>
+        </ol>
+        <h3>Settings: Smartsheet</h3>
+        <ul>
+          <li><b>API key:</b> your Smartsheet API token (in Smartsheet: Profile, Personal Settings, API Access, Generate new access token). The app uses it for everything, so sharing and sheet changes appear as you and follow your permissions. It is never shown again after saving, only the last four characters. Leave it blank later to keep the saved one.</li>
+          <li><b>Base URL:</b> the Smartsheet API address. Leave it as <b>https://api.smartsheet.com/2.0</b> unless your account is on another region, such as the EU or Gov address.</li>
+        </ul>
+        <h3>Settings: Portfolio</h3>
+        <p>A portfolio is one project list, such as AI Workshops. The first portfolio in the list is the one the app uses. <b>Add</b> copies the current one and <b>Remove</b> deletes one.</p>
+        <ul>
+          <li><b>Name:</b> a label for the portfolio. It appears in the log and messages.</li>
+          <li><b>Project list sheet ID:</b> the numeric ID of the Smartsheet sheet that lists your projects. In Smartsheet, open the sheet, then File, Properties, and copy the Sheet ID. This sheet is what the app reads and updates.</li>
+          <li><b>Workspace access:</b> the permission each participant gets on their whole project workspace, including every sheet in it. Admin is recommended so participants can add columns and manage their own tracker. The options are Viewer, Commenter, Editor, Editor (can share) and Admin. Smartsheet only allows Admin for licensed users. If a project is already shared at a lower level, running Activate and share again upgrades it.</li>
+          <li><b>Tracker sheet name:</b> the name of the sheet inside each workspace that the participant works in, such as <b>Community Project Tracker</b>. Analytics reads this sheet, and it is the sheet given the extra access below.</li>
+          <li><b>Tracker sheet access:</b> an optional extra permission on the tracker sheet only. Leave it as <b>NONE</b> when the workspace access already gives enough, which is the case with Admin on the workspace. Pick a level only if you need the tracker to be higher than the rest of the workspace.</li>
+          <li><b>Active value:</b> the text in the Workspace Status column that means a project is active, normally <b>Active</b>. Activate and share sets this value, and the workspace is created from it.</li>
+          <li><b>Poll every (seconds):</b> how often the page checks whether a workspace is ready while you wait. 5 is fine.</li>
+          <li><b>Workspace timeout (seconds):</b> how long to wait for a workspace to appear before giving up on a project and marking it as an error. 600 is the default, because the check runs only about once a minute when the page is closed.</li>
+          <li><b>Send Smartsheet invite email:</b> when ticked, Smartsheet emails the participant their invitation when the workspace is shared. Untick it to share silently.</li>
+        </ul>
+        <h3>Settings: Invite email text</h3>
+        <ul>
+          <li><b>Send me a copy:</b> Smartsheet also emails you a copy of each invitation.</li>
+          <li><b>Subject and Message:</b> your own wording for the invitation Smartsheet sends when a workspace is shared. Blank uses Smartsheet's default. You can use <b>{name}</b> (project name), <b>{workspace}</b> and <b>{url}</b> (the workspace link). These only apply when the invite email is on.</li>
+          <li><b>Attachments:</b> Smartsheet cannot attach files to this email. To give participants a file, add it to the workspace or tracker sheet as an attachment, or put a link in the message.</li>
+        </ul>
+        <h3>Settings: Analytics quick check</h3>
+        <ul>
+          <li><b>Cells checked first:</b> one per line as <b>Column name, row number</b>, for example <b>WBS ID, 22</b>. Analytics reads the history of just these cells first. If the participant edited none, the scan stops early as a partial scan with no changes. Row number is the number shown in Smartsheet. Empty the box to always do the full scan.</li>
+        </ul>
+        <h3>Settings: Column names in the project list</h3>
+        <p>These must match the column titles in your project list sheet exactly, so the app knows where to read and write.</p>
+        <ul>
+          <li><b>Project name:</b> the project name column. The name must be the participant's email address, which is who the workspace is shared with.</li>
+          <li><b>Workspace status:</b> the column the app sets to Active.</li>
+          <li><b>Date:</b> the workshop date, used by the date filters.</li>
+          <li><b>Location:</b> used by the location filter.</li>
+          <li><b>Type / client:</b> used by the client filter.</li>
+          <li><b>Shared:</b> a checkbox column the app ticks once the project is shared.</li>
+          <li><b>Attended:</b> a checkbox column showing whether the participant attended. Analytics hides projects where it is not ticked, since there is nothing to scan. If the column doesn't exist, nobody is hidden.</li>
+        </ul>
+        <h3>Activate and share</h3>
+        <ol>
+          <li>Use the filters on the left (date, location, client, active, shared) to narrow the list. <b>Hide filters</b> / <b>Show filters</b> at the top collapses the panel for more room, and the app remembers your choice.</li>
+          <li>Tick the projects you want. Only projects with an email address as the name can be ticked.</li>
+          <li>Click <b>Activate and share</b>. Each project is set to Active, then once its workspace exists it is shared with the participant, the tracker sheet access is set, and <b>Shared</b> is ticked.</li>
+          <li>You can close the page. The server keeps checking every few seconds and the status is there when you return.</li>
+        </ol>
+        <h3>Analytics: scanning</h3>
+        <ol>
+          <li>Click <b>Analytics</b>. Earlier results appear straight away.</li>
+          <li><b>Attended only</b> is ticked by default and hides projects not ticked as attended. Untick it to include everyone. The other filters apply too.</li>
+          <li>Click <b>Scan new projects</b> to scan projects that have no result yet, including stopped or failed ones.</li>
+          <li><b>Quick check first:</b> each scan reads 5 key cells (Start Date row 8, End Date row 5, Status row 8, WBS ID rows 22 and 36). If the participant has not edited any, it finishes in seconds as <b>"Partial scan of these rows returned no changes"</b>. If they have, the full scan continues, reading every cell. This takes a few minutes per project.</li>
+          <li>Only edits by the participant (the email in the project name) count. The bar length is the number of changes, and the colour shows how recent the last one was.</li>
+        </ol>
+        <h3>Analytics: stop and re-scan</h3>
+        <ul>
+          <li><b>Stop scan</b> appears while a scan runs. Results found so far are kept, and stopped projects show "Stopped at N%".</li>
+          <li>To scan again, tick the projects (or <b>Select all shown</b>), then choose:
+            <ul>
+              <li><b>Quick re-scan selected:</b> checks the 5 key cells first. If the participant edited none, it stops in seconds with "Partial scan of these rows returned no changes". If they edited any, it carries on to the full scan. Use this for routine re-checks.</li>
+              <li><b>Full re-scan selected:</b> skips the quick check and reads every cell. It takes a few minutes per project and gives a complete count of the participant's changes. Use it when you want the whole picture.</li>
+            </ul></li>
+          <li>You can close the page during a scan. It carries on as long as the server window stays open.</li>
+        </ul>
+        <h3>Settings and the log</h3>
+        <ul>
+          <li>Settings also hold the tracker sheet name, access levels, and the <b>Analytics quick check</b> cells (one per line as <b>Column name, row number</b>).</li>
+          <li><b>Log</b> shows everything the app has done for you, newest first. The last 1,000 entries are kept.</li>
+        </ul>
+        <h3>Good to know</h3>
+        <ul>
+          <li>All sharing is done with the API token in config.json, so it appears as that person in Smartsheet and uses their permissions. Scans, jobs and the log are kept in the <b>data</b> folder.</li>
+          <li>Smartsheet only allows Admin on a sheet for licensed users, so unlicensed participants show an error.</li>
+          <li>A change is one cell edit by the participant. Edits made under a different email address than the project name are not counted.</li>
+        </ul>
+      </div>
+      <div class="dlg-foot"><button type="button" id="helpClose">Close</button></div>
     </form>
   </dialog>
 
